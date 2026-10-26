@@ -1,0 +1,8 @@
+{
+  "catalog/app/main.py": "1ed5b91ad7315e9ae6239dccd29aeab083c84bc2ff66ccfad0f6433c2fa5c918",
+  "orders/server.js": "cb5f55585333d0cbf45827b19336fc105a2ecf40093ae728dff666c7956ea076",
+  "worker/worker.py": "c9614acc8f1905e62bb6ae2a8dc0ce294f01cfea7ca87b8ec68e9b03a83db7ab",
+  "frontend/index.html": "5c0eba3689631393584cf411bc5c3c0023887def9668cb4b8bb1af03db93c2df",
+  "frontend/default.conf": "6ed8437baecfd2921e78817741ee4f73bbaa5ea7cead49abc1d5af1469896965",
+  "db/init.sql": "c25f1c9b28847edf732dfb809560c9462f0b374489470ed9e4a94fe825d32a7c"
+}

@@ -1,0 +1,34 @@
+# Operación Despliegue — docker-compose.yml (ESQUELETO)
+#
+# Completa lo que falta (ver la guía del laboratorio, Fase 2).
+# Los nombres de servicio NO se pueden cambiar: frontend, catalog, orders, worker, db, cache.
+# Este archivo ya trae lo mínimo para que el stack exista; todavía NO es un despliegue correcto.
+
+services:
+  frontend:
+    build: ./frontend
+    # TODO: publicar en el host el puerto ${FRONTEND_PORT} (definido en .env)
+    #       hacia el puerto interno en que escucha tu contenedor.
+
+  catalog:
+    build: ./catalog
+    env_file: .env
+
+  orders:
+    build: ./orders
+    env_file: .env
+
+  worker:
+    build: ./worker
+    env_file: .env
+
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    # TODO: ¿dónde viven los datos? ¿cómo se carga ./db/init.sql? ¿cómo sabe Docker que la base está lista?
+
+  cache:
+    image: redis:7-alpine
+    # TODO: ¿cómo sabe Docker que Redis está listo?
+
+# TODO: decide cómo se conectan los servicios entre sí y quién puede hablar con quién.
