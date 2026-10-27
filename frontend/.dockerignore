@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+Dockerfile
+.dockerignore
+*.md
+*.log
+.DS_Store
+Thumbs.db
