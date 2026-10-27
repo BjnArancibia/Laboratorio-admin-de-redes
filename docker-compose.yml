@@ -2,6 +2,8 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "${FRONTEND_PORT}:8080"
     networks:
@@ -15,6 +17,8 @@ services:
   catalog:
     build: ./catalog
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     env_file: .env
     networks:
       - public-net
@@ -26,6 +30,8 @@ services:
   orders:
     build: ./orders
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     env_file: .env
     networks:
       - public-net
@@ -39,6 +45,8 @@ services:
   worker:
     build: ./worker
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     env_file: .env
     networks:
       - internal-net
@@ -51,6 +59,8 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -66,6 +76,8 @@ services:
   cache:
     image: redis:7-alpine
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     networks:
       - internal-net
     healthcheck:
@@ -79,6 +91,7 @@ networks:
     driver: bridge
   internal-net:
     driver: bridge
+    internal: true
 
 volumes:
   pgdata:

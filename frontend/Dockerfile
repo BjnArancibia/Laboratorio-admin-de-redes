@@ -1,7 +1,7 @@
 FROM nginxinc/nginx-unprivileged:alpine
 
-COPY default.conf /etc/nginx/conf.d/default.conf
-COPY index.html /usr/share/nginx/html/index.html
+COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:nginx index.html /usr/share/nginx/html/index.html
 
 USER nginx
 
