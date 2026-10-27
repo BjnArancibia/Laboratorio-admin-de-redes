@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tienda equipo01</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    li { margin: .5rem 0; }
+    button { margin-left: .5rem; }
+    #estado { color: #555; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Tienda equipo01</h1>
+  <ul id="productos"><li>Cargando…</li></ul>
+  <p id="estado"></p>
+  <script>
+    const estado = document.getElementById('estado');
+    async function cargar() {
+      const r = await fetch('/api/products');
+      const items = await r.json();
+      const ul = document.getElementById('productos');
+      ul.innerHTML = '';
+      for (const p of items) {
+        const li = document.createElement('li');
+        li.textContent = `${p.name} — ${p.price} ${p.currency}`;
+        const b = document.createElement('button');
+        b.textContent = 'Comprar';
+        b.onclick = () => comprar(p.id);
+        li.appendChild(b);
+        ul.appendChild(li);
+      }
+    }
+    async function comprar(id) {
+      const r = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: id, qty: 1 }),
+      });
+      const o = await r.json();
+      estado.textContent = `Pedido ${o.id}: ${o.status}`;
+      for (let i = 0; i < 10; i++) {
+        await new Promise(res => setTimeout(res, 1000));
+        const s = await (await fetch(`/api/orders/${o.id}`)).json();
+        estado.textContent = `Pedido ${s.id}: ${s.status}`;
+        if (s.status === 'processed') break;
+      }
+    }
+    cargar().catch(() => { document.getElementById('productos').textContent = 'No se pudo cargar el catálogo'; });
+  </script>
+</body>
+</html>
