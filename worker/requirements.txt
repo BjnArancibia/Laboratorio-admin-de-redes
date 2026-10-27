@@ -1,0 +1,2 @@
+redis>=5,<7
+psycopg2-binary

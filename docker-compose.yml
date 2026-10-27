@@ -1,0 +1,85 @@
+services:
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT}:8080"
+    networks:
+      - public-net
+    depends_on:
+      catalog:
+        condition: service_healthy
+      orders:
+        condition: service_healthy
+
+  catalog:
+    build: ./catalog
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - public-net
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  orders:
+    build: ./orders
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - public-net
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
+  worker:
+    build: ./worker
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - internal-net
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  public-net:
+    driver: bridge
+  internal-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
