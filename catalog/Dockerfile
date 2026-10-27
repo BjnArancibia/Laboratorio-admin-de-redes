@@ -20,20 +20,21 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN addgroup -S -g 10001 app \
+RUN apk add --no-cache libpq \
+    && addgroup -S -g 10001 app \
     && adduser -S -D -H -u 10001 -G app -s /sbin/nologin app
 
-COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder --chown=10001:10001 /opt/venv /opt/venv
 
 WORKDIR /app
-COPY app ./app
+COPY --chown=10001:10001 app ./app
 
 USER 10001:10001
 
 EXPOSE 8000
 
 # readyz también revisa la conexión a la base
-HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=2)"]
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

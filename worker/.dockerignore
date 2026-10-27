@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.git
+.gitignore
+.env
+.env.*
+Dockerfile
+.dockerignore
+*.md
+*.log
+.DS_Store
+Thumbs.db
