@@ -1,12 +1,12 @@
 # Etapa 1: Instalación de dependencias de producción
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Etapa 2: Imagen final de ejecución (sin caché de npm ni archivos innecesarios)
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 ENV NODE_ENV=production
 WORKDIR /app

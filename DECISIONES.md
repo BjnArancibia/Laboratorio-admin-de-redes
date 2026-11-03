@@ -43,7 +43,7 @@ Completa **una fila por decisión**. Explica el porqué en una o dos frases: la 
 | Incidente | Qué pasó | Qué cambiaron | Cuánto demoraron |
 |-----------|----------|---------------|------------------|
 | 1 | Cambio de requisito de Marketing: publicar la tienda en el puerto `19001` (`19000 + 1` para `equipo01`) y mostrar precios del catálogo en moneda `EUR` (`1 mod 4 = 1`) sin modificar `catalog/app/main.py`. | Se actualizó `FRONTEND_PORT=19001` y se añadió `CURRENCY=EUR` en `.env`, `.env.example` y en `docker-compose.yml` (`catalog.environment` y `frontend.ports`), recreando los contenedores con `docker compose up -d`. | 3 minutos |
-| 2 | _(Se evalúa en la Sesión 2)_ | | |
+| 2 | Alerta de seguridad por vulnerabilidad crítica en runtimes antiguos: política inmediata de exigir Python >= 3.13 y Node >= 22 con tags explícitos en cada FROM. | Se actualizaron los tags de `catalog/Dockerfile` y `worker/Dockerfile` a `python:3.13-alpine` (builder y final), y en `orders/Dockerfile` a `node:22-alpine` (deps y runner) con tag explícito y sin variables. | 5 minutos |
 | 3 | _(Se evalúa en la Sesión 2)_ | | |
 
 ## Uso de IA

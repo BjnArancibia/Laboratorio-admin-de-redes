@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # etapa de build: dependencias en un venv
-FROM python:3.12-alpine AS builder
+FROM python:3.13-alpine AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # imagen final
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
