@@ -88,6 +88,41 @@ services:
       timeout: 3s
       retries: 5
 
+  # incidente 3: un docker kill cuenta como parada manual y la politica restart no
+  # vuelve a levantar a redis, asi que este servicio lo revisa y lo arranca si quedo detenido
+  cache-guard:
+    image: docker:27-cli
+    restart: always
+    network_mode: none
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    environment:
+      - DOCKER_CONFIG=/tmp/docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # depende de cache para que en un down se detenga antes que redis
+    depends_on:
+      cache:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        trap 'exit 0' TERM INT
+        proyecto=$$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$$(hostname)")
+        echo "vigilando cache del proyecto $$proyecto"
+        while true; do
+          for c in $$(docker ps -aq --filter "label=com.docker.compose.project=$$proyecto" --filter "label=com.docker.compose.service=cache" --filter "status=exited"); do
+            echo "$$(date -Iseconds) cache detenido, reiniciando $$c"
+            docker start "$$c" >/dev/null
+          done
+          sleep 2 & wait $$!
+        done
+
 networks:
   public-net:
     driver: bridge

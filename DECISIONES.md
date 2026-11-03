@@ -33,6 +33,10 @@ Completa **una fila por decisión**. Explica el porqué en una o dos frases: la 
    - **Diagnóstico:** Al revisar el esqueleto inicial de `docker-compose.yml` con `docker compose config`, observamos que `db` no montaba `./db/init.sql` en `/docker-entrypoint-initdb.d/` ni tenía `healthcheck`, por lo que `catalog`, `orders` y `worker` arrancaban antes de que PostgreSQL estuviera listo para aceptar conexiones.
    - **Solución:** Se configuraron los healthchecks de `db` y `cache` y se añadió `depends_on` con `condition: service_healthy` en `catalog`, `orders`, `worker` y `frontend`.
 
+4. **La política `restart` no revive a Redis después de un `docker kill` (incidente 3):**
+   - **Diagnóstico:** `python incident3.py` respondía `Redis no volvió a estar en pie en 60s` aunque `cache` ya tenía `restart: unless-stopped`. Con `docker inspect -f '{{.HostConfig.RestartPolicy.Name}} {{.RestartCount}}' equipo01-cache-1` vimos `restarts=0`. Probamos `always`, `unless-stopped` y `on-failure` en un contenedor de prueba: las tres reinician si Redis termina solo (`redis-cli shutdown`), pero ninguna después de `docker kill`, porque Docker (29.x) lo registra como parada manual.
+   - **Solución:** Un servicio `cache-guard` que vigila y arranca el contenedor `cache` cuando queda `exited` (ver incidente 3). El costo es que monta `/var/run/docker.sock`, que da control sobre Docker en el host; por eso corre sin red, sin capacidades y en solo lectura.
+
 ## Pendientes concretos para la segunda sesión
 
 - Realizar las pruebas de respuesta ante los 3 incidentes en vivo que aplicará el docente en la Sesión 2 y registrarlos en la tabla de Incidentes.
@@ -44,7 +48,7 @@ Completa **una fila por decisión**. Explica el porqué en una o dos frases: la 
 |-----------|----------|---------------|------------------|
 | 1 | Cambio de requisito de Marketing: publicar la tienda en el puerto `19001` (`19000 + 1` para `equipo01`) y mostrar precios del catálogo en moneda `EUR` (`1 mod 4 = 1`) sin modificar `catalog/app/main.py`. | Se actualizó `FRONTEND_PORT=19001` y se añadió `CURRENCY=EUR` en `.env`, `.env.example` y en `docker-compose.yml` (`catalog.environment` y `frontend.ports`), recreando los contenedores con `docker compose up -d`. | 3 minutos |
 | 2 | Alerta de seguridad por vulnerabilidad crítica en runtimes antiguos: política inmediata de exigir Python >= 3.13 y Node >= 22 con tags explícitos en cada FROM. | Se actualizaron los tags de `catalog/Dockerfile` y `worker/Dockerfile` a `python:3.13-alpine` (builder y final), y en `orders/Dockerfile` a `node:22-alpine` (deps y runner) con tag explícito y sin variables. | 5 minutos |
-| 3 | _(Se evalúa en la Sesión 2)_ | | |
+| 3 | Servicio caído: Redis muere de golpe (`docker compose kill -s SIGKILL cache`) y nadie lo vuelve a levantar, el worker queda `unhealthy` y los pedidos dejan de procesarse. Con `restart: unless-stopped` el script quedaba en `PENDIENTE` (`restarts=0`), porque Docker trata un `docker kill` como parada manual y no aplica la política de reinicio. | Se agregó el servicio `cache-guard` (`docker:27-cli`) en `docker-compose.yml`: cada 2 s busca el contenedor `cache` de su propio proyecto en estado `exited` y lo arranca con `docker start`. Corre sin red (`network_mode: none`), con sistema de archivos de solo lectura, `cap_drop: ALL` y `no-new-privileges`, y depende de `cache` para que en un `down` se detenga antes que Redis. Redis vuelve en unos 2 s y `orders`/`worker` se reconectan solos. | 8 minutos |
 
 ## Uso de IA
 
@@ -52,6 +56,7 @@ Utilizamos un asistente de IA como apoyo para analizar la rúbrica de `tools/ver
 1. En las imágenes Python basadas en Alpine (`catalog` y `worker`), añadimos explícitamente `apk add --no-cache libpq` en la etapa final y `--chown=10001:10001` para evitar errores de librerías dinámicas y permisos con el usuario no-root.
 2. En `catalog/.dockerignore` y `worker/.dockerignore`, corregimos un error tipográfico (`__pycache_` -> `__pycache__/`) para excluir efectivamente la caché de bytecode de Python.
 3. Ajustamos el orden de instrucciones `COPY` en `orders/Dockerfile` y `catalog/Dockerfile` para que el test automático de caché (`check_cache`) no reinstale dependencias al editar `server.js` o `main.py`.
+4. En el incidente 3 la primera sugerencia fue cambiar `cache` a `restart: always`. La probamos y no funcionó (`restarts=0` tras el `docker kill`), así que la descartamos y usamos el servicio `cache-guard`.
 
 ## Qué haríamos distinto con más tiempo
 
