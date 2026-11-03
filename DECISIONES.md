@@ -42,7 +42,7 @@ Completa **una fila por decisión**. Explica el porqué en una o dos frases: la 
 
 | Incidente | Qué pasó | Qué cambiaron | Cuánto demoraron |
 |-----------|----------|---------------|------------------|
-| 1 | _(Se evalúa en la Sesión 2)_ | | |
+| 1 | Cambio de requisito de Marketing: publicar la tienda en el puerto `19001` (`19000 + 1` para `equipo01`) y mostrar precios del catálogo en moneda `EUR` (`1 mod 4 = 1`) sin modificar `catalog/app/main.py`. | Se actualizó `FRONTEND_PORT=19001` y se añadió `CURRENCY=EUR` en `.env`, `.env.example` y en `docker-compose.yml` (`catalog.environment` y `frontend.ports`), recreando los contenedores con `docker compose up -d`. | 3 minutos |
 | 2 | _(Se evalúa en la Sesión 2)_ | | |
 | 3 | _(Se evalúa en la Sesión 2)_ | | |
 
