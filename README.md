@@ -1,4 +1,4 @@
-# Operación Despliegue — repositorio de equipo01
+# Operación Despliegue — repositorio de equipo07
 
 Este es el repositorio de tu equipo. Las instrucciones completas están en la guía del laboratorio (PDF).
 
